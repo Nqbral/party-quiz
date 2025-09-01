@@ -1,0 +1,41 @@
+{
+  "name": "@love-letter/server",
+  "version": "1.0.0",
+  "author": "Simon Chevalier",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "nest build",
+    "start:dev": "nest start --watch",
+    "start:prod": "rimraf dist && nest build && node dist/server/src/main"
+  },
+  "dependencies": {
+    "@love-letter/shared": "*",
+    "@nestjs/axios": "^4.0.0",
+    "@nestjs/cli": "^11.0.6",
+    "@nestjs/common": "^11.0.14",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.0.14",
+    "@nestjs/jwt": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.14",
+    "@nestjs/platform-socket.io": "^11.0.13",
+    "@nestjs/schedule": "^5.0.1",
+    "@nestjs/websockets": "^11.0.13",
+    "axios": "^1.9.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "react-loader-spinner": "^6.1.6",
+    "reflect-metadata": "^0.2.2",
+    "rimraf": "^6.0.1",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.6",
+    "@nestjs/schematics": "^11.0.4",
+    "@nestjs/testing": "^11.0.14",
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
+    "prettier": "3.5.3",
+    "typescript": "^5.8.2"
+  }
+}

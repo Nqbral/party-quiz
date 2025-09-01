@@ -1,0 +1,19 @@
+{
+  "name": "love-letter",
+  "version": "1.0.0",
+  "repository": "https://github.com/Nqbral/love-letter.git",
+  "author": "Simon Chevalier",
+  "license": "MIT",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "workspaces/*"
+    ]
+  },
+  "scripts": {
+    "start:dev:client": "yarn workspace @love-letter/client start:dev",
+    "start:prod:client": "yarn workspace @love-letter/client start:prod",
+    "start:dev:server": "yarn workspace @love-letter/server start:dev",
+    "start:prod:server": "yarn workspace @love-letter/server start:prod"
+  }
+}
