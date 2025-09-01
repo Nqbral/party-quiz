@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@contexts/AuthContext';
-import LastHopeLogo from '@public/last-hope-logo-row.png';
+import ShadowNetworkLogo from '@public/shadow_network_logo_horizontal.png';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -14,7 +14,7 @@ export default function Navbar() {
 
   const toLogin = () => {
     const currentUrl =
-      process.env.NEXT_PUBLIC_WS_LAST_HOPE_URL +
+      process.env.NEXT_PUBLIC_WS_SHADOW_NETWORK_URL +
       pathname +
       (searchParams ? `?${searchParams.toString()}` : '');
 
@@ -28,10 +28,14 @@ export default function Navbar() {
   };
 
   return (
-    <div className="fixed top-0 z-40 flex w-full flex-row items-center justify-between bg-neutral-900 px-6 py-4 shadow-sm shadow-neutral-950">
+    <div className="bg-bg-navbar fixed top-0 z-40 flex w-full flex-row items-center justify-between px-6 py-2 shadow-sm shadow-neutral-950 sm:py-3 md:py-4">
       <Link href="/">
         <div className="flex flex-row items-center gap-2">
-          <Image src={LastHopeLogo} className="w-32" alt="nqbral-games-logo" />
+          <Image
+            src={ShadowNetworkLogo}
+            className="w-12 sm:w-16 md:w-20"
+            alt="shadow-network-logo-navbar"
+          />
         </div>
       </Link>
       {isLogged == null && <></>}
@@ -39,7 +43,7 @@ export default function Navbar() {
         <div>
           <Link
             href={`${process.env.NEXT_PUBLIC_WS_NQBRAL_GAMES_URL}/profile/informations`}
-            className="transition-colors hover:text-neutral-300"
+            className="text-xs transition-colors hover:text-neutral-300 sm:text-sm md:text-base"
             target="_blank"
           >
             {userName}
@@ -48,7 +52,7 @@ export default function Navbar() {
       )}
       {isLogged == false && (
         <button
-          className="transition-colors hover:text-neutral-300"
+          className="text-xs transition-colors hover:text-neutral-300 sm:text-sm md:text-base"
           onClick={toLogin}
         >
           Se connecter

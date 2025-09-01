@@ -1,0 +1,7 @@
+# *
+User-agent: *
+Disallow: /game
+Disallow: /lobby
+
+# Sitemaps
+Sitemap: https://shadow-network.nqbral-games.fr/sitemap.xml

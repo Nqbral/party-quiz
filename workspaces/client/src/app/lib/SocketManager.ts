@@ -1,6 +1,6 @@
-import { ClientSocketEvents } from '@love-letter/shared/types/ClientSocketEvents';
-import { AUTH_EVENTS } from '@love-letter/shared/consts/AuthEvents';
-import { ServerEvents } from '@love-letter/shared/enums/ServerEvents';
+import { ClientSocketEvents } from '@shadow-network/shared/types/ClientSocketEvents';
+import { AUTH_EVENTS } from '@shadow-network/shared/consts/AuthEvents';
+import { ServerEvents } from '@shadow-network/shared/enums/ServerEvents';
 import { io, Socket } from 'socket.io-client';
 
 interface SocketAuth {

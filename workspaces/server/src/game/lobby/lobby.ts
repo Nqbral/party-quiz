@@ -45,10 +45,6 @@ export class Lobby {
   public addClient(newClient: AuthenticatedSocket): void {
     const existing = this.players.find((p) => p.userId === newClient.userId);
 
-    this.server
-      .to(newClient.id)
-      .emit(ServerEvents.LobbyJoin, { lobbyId: this.id });
-
     if (existing) {
       existing.disconnected = false;
       newClient.join(this.id);
@@ -122,6 +118,7 @@ export class Lobby {
     this.stateBeforePause = this.stateLobby;
     this.stateLobby = LOBBY_STATES.GAME_PAUSED;
 
+    this.instance.clearTimeout();
     this.dispatchLobbyState();
   }
 
@@ -133,6 +130,7 @@ export class Lobby {
       this.stateLobby == LOBBY_STATES.GAME_PAUSED
     ) {
       this.stateLobby = this.stateBeforePause;
+      this.instance.launchTimeoutContinueGame();
       this.stateBeforePause = '';
     }
   }

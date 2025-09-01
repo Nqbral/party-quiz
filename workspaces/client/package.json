@@ -1,19 +1,24 @@
 {
-  "name": "@love-letter/client",
+  "name": "@shadow-network/client",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start:dev": "next dev -p 3034",
+    "start:dev": "next dev -p 3035",
     "start:prod": "next build && next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "sitemap": "next-sitemap"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
     "@mui/material": "^7.1.0",
     "axios": "^1.9.0",
     "lucide-react": "^0.511.0",
     "next": "15.3.1",
+    "next-sitemap": "^4.2.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-loader-spinner": "^6.1.6",

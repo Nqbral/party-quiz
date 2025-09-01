@@ -24,7 +24,7 @@
       "@contexts/*": ["app/contexts/*"],
       "@lib/*": ["app/lib/*"],
       "@public/*": ["../public/*"],
-      "@love-letter/shared/*": ["../../shared/*"]
+      "@shadow-network/shared/*": ["../../shared/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

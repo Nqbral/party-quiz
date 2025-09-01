@@ -1,7 +1,7 @@
 {
-  "name": "love-letter",
+  "name": "shadow-network",
   "version": "1.0.0",
-  "repository": "https://github.com/Nqbral/love-letter.git",
+  "repository": "https://github.com/Nqbral/shadow-network.git",
   "author": "Simon Chevalier",
   "license": "MIT",
   "private": true,
@@ -11,9 +11,9 @@
     ]
   },
   "scripts": {
-    "start:dev:client": "yarn workspace @love-letter/client start:dev",
-    "start:prod:client": "yarn workspace @love-letter/client start:prod",
-    "start:dev:server": "yarn workspace @love-letter/server start:dev",
-    "start:prod:server": "yarn workspace @love-letter/server start:prod"
+    "start:dev:client": "yarn workspace @shadow-network/client start:dev",
+    "start:prod:client": "yarn workspace @shadow-network/client start:prod",
+    "start:dev:server": "yarn workspace @shadow-network/server start:dev",
+    "start:prod:server": "yarn workspace @shadow-network/server start:prod"
   }
 }

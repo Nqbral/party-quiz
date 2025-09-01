@@ -3,7 +3,7 @@
 import LinkButton, { TypeLinkButton } from '@components/buttons/LinkButton';
 import RedButton from '@components/buttons/RedButton';
 import { useSocket } from '@contexts/SocketContext';
-import { CLIENT_EVENTS } from '@love-letter/shared/consts/ClientEvents';
+import { CLIENT_EVENTS } from '@shadow-network/shared/consts/ClientEvents';
 import { useEffect, useState } from 'react';
 
 export default function LobbyReconnectToast() {
@@ -26,7 +26,7 @@ export default function LobbyReconnectToast() {
   }
 
   return (
-    <div className="md:text-md fixed right-4 bottom-4 z-50 flex w-72 flex-col items-center rounded border bg-neutral-900 p-4 text-sm shadow-lg sm:w-80">
+    <div className="md:text-md bg-bg-navbar fixed right-4 bottom-4 z-50 flex w-72 flex-col items-center rounded border p-4 text-sm shadow-lg sm:w-80">
       <p className="mb-2 text-sm">Vous avez une partie en cours.</p>
       <LinkButton
         buttonText="Revenir"

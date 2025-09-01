@@ -50,6 +50,10 @@ export class LobbyManager {
     this.lobbies.set(lobby.id, lobby);
 
     lobby.addClient(owner);
+    this.addLobby(owner, lobby);
+    this.emitEventForAllConnexionsClient(owner, ServerEvents.LobbyJoin, {
+      lobbyId: lobby.id,
+    });
 
     this.lastKnownLobbyPerUser.set(owner.userId, lobby.id);
 
@@ -91,16 +95,16 @@ export class LobbyManager {
         message: 'Vous êtes déjà dans une autre partie.',
       });
 
-      const lobby = this.getLobby(client, currentLobby);
-      lobby.addClient(client);
-      lobby.instance.dispatchGameState();
-
       throw new WsException('Already in a lobby');
     }
 
     const lobby = this.getLobby(client, lobbyId);
 
     lobby.addClient(client);
+    this.addLobby(client, lobby);
+    this.emitEventForAllConnexionsClient(client, ServerEvents.LobbyJoin, {
+      lobbyId: lobby.id,
+    });
     this.lastKnownLobbyPerUser.set(client.userId, lobby.id);
 
     lobby.instance.dispatchGameState();
@@ -122,6 +126,28 @@ export class LobbyManager {
         socket.emit(ServerEvents.LobbyLeave, { message: 'Lobby supprimé.' });
       });
       this.clearLastLobbyForUser(client.userId);
+    });
+  }
+
+  private addLobby(client: AuthenticatedSocket, lobby: Lobby): void {
+    const connections =
+      this.gameGateway.playerConnections.get(client.userId) || [];
+
+    connections.forEach((socket) => {
+      socket.lobby = lobby;
+    });
+  }
+
+  public emitEventForAllConnexionsClient(
+    client: AuthenticatedSocket,
+    event: ServerEvents,
+    data: any,
+  ): void {
+    const connections =
+      this.gameGateway.playerConnections.get(client.userId) || [];
+
+    connections.forEach((socket) => {
+      socket.emit(event, data);
     });
   }
 

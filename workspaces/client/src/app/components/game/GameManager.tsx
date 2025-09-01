@@ -3,13 +3,14 @@
 import Navbar from '@components/navbar/Navbar';
 import { useSocket } from '@contexts/SocketContext';
 import { Listener } from '@lib/SocketManager';
-import { CLIENT_EVENTS } from '@love-letter/shared/consts/ClientEvents';
-import { LOBBY_STATES } from '@love-letter/shared/consts/LobbyStates';
-import { ServerEvents } from '@love-letter/shared/enums/ServerEvents';
-import { ServerPayloads } from '@love-letter/shared/types/ServerPayloads';
+import { CLIENT_EVENTS } from '@shadow-network/shared/consts/ClientEvents';
+import { LOBBY_STATES } from '@shadow-network/shared/consts/LobbyStates';
+import { EventDescriptonNames } from '@shadow-network/shared/enums/EventDescriptionNames';
+import { ServerEvents } from '@shadow-network/shared/enums/ServerEvents';
+import { ServerPayloads } from '@shadow-network/shared/types/ServerPayloads';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Triangle } from 'react-loader-spinner';
+import { MagnifyingGlass } from 'react-loader-spinner';
 
 import Game from './Game';
 import GameLobby from './GameLobby';
@@ -38,15 +39,18 @@ export default function GameManager() {
   >({
     lobbyId: '',
     stateGame: '',
+    roundNumber: 0,
     players: [],
-    roundNumber: 1,
-    remediesToFind: 1,
     playerTurn: null,
-    checkedPlayerHand: null,
-    cardsDisplayedRound: [],
-    remediesFound: 0,
-    statusFinish: '',
+    playersTurnOrder: [],
+    deck: [],
+    lastPlayedCard: '',
+    secondPlayedCard: '',
+    scoreToReach: 0,
     historyEvents: [],
+    eventDescription: undefined,
+    eventDescriptionKey: EventDescriptonNames.None,
+    roundRecap: null,
   });
 
   useEffect(() => {
@@ -66,7 +70,6 @@ export default function GameManager() {
       data,
     ) => {
       setGameState(data);
-      console.log('game state data');
     };
 
     const onLobbyError: Listener<ServerPayloads[ServerEvents.LobbyError]> = (
@@ -111,11 +114,12 @@ export default function GameManager() {
       <>
         <Navbar />
         <div className="flex min-h-screen w-full flex-col items-center justify-center">
-          <Triangle
+          <MagnifyingGlass
             visible={true}
             height="80"
             width="80"
-            color="#2F9966"
+            glassColor="#ffffff00"
+            color="oklch(87.9% 0.169 91.605)"
             ariaLabel="three-dots-loading"
           />
         </div>

@@ -1,8 +1,8 @@
 import { useAuth } from '@contexts/AuthContext';
 import { SocketManager } from '@lib/SocketManager';
 import { Listener } from '@lib/SocketManager';
-import { ServerEvents } from '@love-letter/shared/enums/ServerEvents';
-import { ClientSocketEvents } from '@love-letter/shared/types/ClientSocketEvents';
+import { ServerEvents } from '@shadow-network/shared/enums/ServerEvents';
+import { ClientSocketEvents } from '@shadow-network/shared/types/ClientSocketEvents';
 import React, {
   createContext,
   useContext,

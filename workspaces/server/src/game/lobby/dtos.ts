@@ -1,3 +1,4 @@
+import { Card } from '@shared/classes/Card';
 import { IsNumber, IsString } from 'class-validator';
 
 export class LobbyJoinDto {
@@ -5,15 +6,40 @@ export class LobbyJoinDto {
   lobbyIdJoin: string;
 }
 
-export class CheckingOtherHandDto {
+export class PlayWithoutEffectDto {
   @IsString()
-  idOtherPlayer: string;
+  cardPlayed: string;
 }
 
-export class DrawOtherPlayerCardDto {
+export class PlaySecurityAgentDto {
   @IsString()
-  idOtherPlayer: string;
+  cardGuessed: string;
 
-  @IsNumber()
-  indexCardDraw: number;
+  @IsString()
+  playerTargetedId: string;
+}
+
+export class PlayInformantDto {
+  @IsString()
+  playerTargetedId: string;
+}
+
+export class PlayMagnateDto {
+  @IsString()
+  playerTargetedId: string;
+}
+
+export class PlayUndercoverAgentDto {
+  @IsString()
+  playerTargetedId: string;
+}
+
+export class PlayStrategistPartTwoDto {
+  indexCardsDiscarded: number[];
+  cardsDiscarded: Card[];
+}
+
+export class PlayDirectorOfOperationsDto {
+  @IsString()
+  playerTargetedId: string;
 }

@@ -2,9 +2,9 @@ import CopyInviteLinkButton from '@components/buttons/CopyInviteLinkButton';
 import PrimaryButton from '@components/buttons/PrimaryButton';
 import RedButton from '@components/buttons/RedButton';
 import { useSocket } from '@contexts/SocketContext';
-import { CLIENT_EVENTS } from '@love-letter/shared/consts/ClientEvents';
-import { ServerEvents } from '@love-letter/shared/enums/ServerEvents';
-import { ServerPayloads } from '@love-letter/shared/types/ServerPayloads';
+import { CLIENT_EVENTS } from '@shadow-network/shared/consts/ClientEvents';
+import { ServerEvents } from '@shadow-network/shared/enums/ServerEvents';
+import { ServerPayloads } from '@shadow-network/shared/types/ServerPayloads';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -21,12 +21,12 @@ export default function GameLobby({ lobbyState }: Props) {
 
   const handleStart = () => {
     if (lobbyState?.players != undefined) {
-      if (lobbyState.players.length < 4) {
+      if (lobbyState.players.length < 2) {
         setErrMsgName("Il n'y a pas assez de joueurs pour lancer la partie.");
         return;
       }
 
-      if (lobbyState.players.length > 8) {
+      if (lobbyState.players.length > 6) {
         setErrMsgName('Il y a trop de joueurs pour lancer la partie.');
         return;
       }
@@ -42,8 +42,8 @@ export default function GameLobby({ lobbyState }: Props) {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 text-sm sm:text-base">
-      <p className="italic">Nombre de joueurs minimum requis : 4</p>
-      <p className="italic">Nombre de joueurs maximum : 8</p>
+      <p className="italic">Nombre de joueurs minimum requis : 2</p>
+      <p className="italic">Nombre de joueurs maximum : 6</p>
       <div className="flex w-80 flex-col items-center justify-center gap-2 border-1 border-slate-700 py-4 sm:w-100">
         <h2 className="mb-2 text-base sm:text-lg">Liste des joueurs</h2>
         {lobbyState?.players.map((player, index) => {
@@ -74,7 +74,7 @@ export default function GameLobby({ lobbyState }: Props) {
           <RedButton buttonText="Supprimer le lobby" onClick={handleDelete} />
         </div>
       ) : (
-        <div className="flex flex-row items-center gap-3">
+        <div className="flex flex-col items-center gap-3 sm:flex-row">
           <CopyInviteLinkButton />
           <RedButton buttonText="Quitter le lobby" onClick={handleLeave} />
         </div>

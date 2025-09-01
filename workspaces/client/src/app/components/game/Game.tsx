@@ -1,27 +1,37 @@
-import ModalCheckingCards from '@components/modal/ModalCheckingCards';
-import ModalCheckingOtherPlayerCards from '@components/modal/ModalCheckingOtherPlayerCards';
-import ModalFinishedByLeaving from '@components/modal/ModalFinishedByLeaving';
-import ModalFinishedRound from '@components/modal/ModalFinishedRound';
-import ModalOtherPlayerCardDraw from '@components/modal/ModalOtherPlayerCardDraw';
-import ModalPauseDisconnect from '@components/modal/ModalPauseDisconnect';
-import ModalRecapRound from '@components/modal/ModalRecapRound';
-import ModalRoleDistribution from '@components/modal/ModalRoleDistribution';
+import ModalDirectorOfOperationsSwap from '@components/modal/game_state_modals/ModalDirectorOfOperationsSwap';
+import ModalFinishedGame from '@components/modal/game_state_modals/ModalFinishedGame';
+import ModalInformantCheck from '@components/modal/game_state_modals/ModalInformantCheck';
+import ModalMagnateComparison from '@components/modal/game_state_modals/ModalMagnateComparison';
+import ModalRecapRound from '@components/modal/game_state_modals/ModalRecapRound';
+import ModalSecurityAgentGuess from '@components/modal/game_state_modals/ModalSecurityAgentGuess';
+import ModalStrategistDraw from '@components/modal/game_state_modals/ModalStrategistDraw';
+import ModalUndercoverAgentDiscard from '@components/modal/game_state_modals/ModalUndercoverAgentDiscard';
+import ModalFinishedByLeaving from '@components/modal/lobby_state_modals/ModalFinishedByLeaving';
+import ModalPauseDisconnect from '@components/modal/lobby_state_modals/ModalPauseDisconnect';
+import ModalPlayDirectorOfOperations from '@components/modal/play_modals/ModalPlayDirectorOfOperations';
+import ModalPlayDoubleAgent from '@components/modal/play_modals/ModalPlayDoubleAgent';
+import ModalPlayInformant from '@components/modal/play_modals/ModalPlayInformant';
+import ModalPlayMagnate from '@components/modal/play_modals/ModalPlayMagnate';
+import ModalPlaySecurityAgent from '@components/modal/play_modals/ModalPlaySecurityAgent';
+import ModalPlayUndercoverAgent from '@components/modal/play_modals/ModalPlayUndercoverAgent';
 import { useSocket } from '@contexts/SocketContext';
-import { Player } from '@love-letter/shared/classes/Player';
-import { GAME_STATES } from '@love-letter/shared/consts/GameStates';
-import { LOBBY_STATES } from '@love-letter/shared/consts/LobbyStates';
-import { ServerEvents } from '@love-letter/shared/enums/ServerEvents';
-import { ServerPayloads } from '@love-letter/shared/types/ServerPayloads';
 import { Modal } from '@mui/material';
+import { Player } from '@shadow-network/shared/classes/Player';
+import { GAME_STATES } from '@shadow-network/shared/consts/GameStates';
+import { LOBBY_STATES } from '@shadow-network/shared/consts/LobbyStates';
+import { NAME_CARD } from '@shadow-network/shared/consts/NameCard';
+import { ServerEvents } from '@shadow-network/shared/enums/ServerEvents';
+import { ServerPayloads } from '@shadow-network/shared/types/ServerPayloads';
 import { Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Slide, ToastContainer } from 'react-toastify';
 
-import DrawedCardsRound from './DrawedCardRound';
-import FoundRemedies from './FoundRemedies';
+import DeckAndDiscardedCards from './DeckAndDiscardedCards';
 import GameInformations from './GameInformations';
+import MyPlayerDisplay from './MyPlayerDisplay';
 import PlayersDisplay from './PlayersDisplay';
-import RoundInformations from './RoundInformations';
+import ScoreToReachInformation from './ScoreToReachInformation';
+import RoundInformations from './gameinformations/RoundInformations';
 
 type Props = {
   lobbyState: ServerPayloads[ServerEvents.LobbyState] | null;
@@ -32,6 +42,11 @@ export default function Game({ lobbyState, gameState }: Props) {
   const { userId } = useSocket();
   const [myPlayer, setPlayer] = useState<Player | undefined>(undefined);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [modalTypeCard, setModalTypeCard] = useState<string | null>(null);
+
+  const handleCardAction = (cardName: string | null) => {
+    setModalTypeCard(cardName);
+  };
 
   useEffect(() => {
     if (gameState != null) {
@@ -62,6 +77,7 @@ export default function Game({ lobbyState, gameState }: Props) {
   return (
     <>
       {/* Modals */}
+      {/* Lobby state modals */}
       <Modal
         open={lobbyState?.stateLobby == LOBBY_STATES.GAME_PAUSED}
         onClose={() => {}}
@@ -80,45 +96,59 @@ export default function Game({ lobbyState, gameState }: Props) {
         <ModalFinishedByLeaving lobbyState={lobbyState} />
       </Modal>
 
+      {/* MODALS GAME STATE */}
       <Modal
         open={
           lobbyState?.stateLobby != LOBBY_STATES.GAME_PAUSED &&
           lobbyState?.stateLobby != LOBBY_STATES.GAME_FINISHED_BY_LEAVING &&
-          gameState?.stateGame == GAME_STATES.ROLE_DISTRIBUTION
+          gameState?.stateGame == GAME_STATES.SECURITY_AGENT_GUESS
         }
         onClose={() => {}}
-        aria-labelledby="modal-role-distribution"
-        aria-describedby="modal-role-distribution"
+        aria-labelledby="modal-security-agent-guess"
+        aria-describedby="modal-security-agent-guess"
       >
-        <ModalRoleDistribution player={myPlayer} gameState={gameState} />
+        <ModalSecurityAgentGuess gameState={gameState} myPlayer={myPlayer} />
       </Modal>
 
       <Modal
         open={
           lobbyState?.stateLobby != LOBBY_STATES.GAME_PAUSED &&
           lobbyState?.stateLobby != LOBBY_STATES.GAME_FINISHED_BY_LEAVING &&
-          gameState?.stateGame == GAME_STATES.CHECKING_CARDS
+          gameState?.stateGame == GAME_STATES.INFORMANT_CHECK
         }
         onClose={() => {}}
-        aria-labelledby="modal-checking-cards"
-        aria-describedby="modal-checking-cards"
+        aria-labelledby="modal-informant-check"
+        aria-describedby="modal-informant-check"
       >
-        <ModalCheckingCards player={myPlayer} gameState={gameState} />
+        <ModalInformantCheck gameState={gameState} myPlayer={myPlayer} />
       </Modal>
 
       <Modal
         open={
           lobbyState?.stateLobby != LOBBY_STATES.GAME_PAUSED &&
           lobbyState?.stateLobby != LOBBY_STATES.GAME_FINISHED_BY_LEAVING &&
-          gameState?.stateGame == GAME_STATES.CHECKING_OTHER_PLAYER_CARDS
+          gameState?.stateGame == GAME_STATES.MAGNATE_COMPARISON
         }
         onClose={() => {}}
-        aria-labelledby="modal-checking-other-cards"
-        aria-describedby="modal-checking-other-cards"
+        aria-labelledby="modal-magnate-comparison"
+        aria-describedby="modal-magnate-comparison"
       >
-        <ModalCheckingOtherPlayerCards
-          player={myPlayer}
+        <ModalMagnateComparison gameState={gameState} myPlayer={myPlayer} />
+      </Modal>
+
+      <Modal
+        open={
+          lobbyState?.stateLobby != LOBBY_STATES.GAME_PAUSED &&
+          lobbyState?.stateLobby != LOBBY_STATES.GAME_FINISHED_BY_LEAVING &&
+          gameState?.stateGame == GAME_STATES.UNDERCOVER_AGENT_DISCARD
+        }
+        onClose={() => {}}
+        aria-labelledby="modal-undercover-agent-discard"
+        aria-describedby="modal-undercover-agent-discard"
+      >
+        <ModalUndercoverAgentDiscard
           gameState={gameState}
+          myPlayer={myPlayer}
         />
       </Modal>
 
@@ -126,13 +156,29 @@ export default function Game({ lobbyState, gameState }: Props) {
         open={
           lobbyState?.stateLobby != LOBBY_STATES.GAME_PAUSED &&
           lobbyState?.stateLobby != LOBBY_STATES.GAME_FINISHED_BY_LEAVING &&
-          gameState?.stateGame == GAME_STATES.OTHER_PLAYER_CARD_DRAW
+          gameState?.stateGame == GAME_STATES.STRATEGIST_DRAW
         }
         onClose={() => {}}
-        aria-labelledby="modal-other-player-card-draw"
-        aria-describedby="modal-other-player-card-draw"
+        aria-labelledby="modal-strategist-draw"
+        aria-describedby="modal-strategist-draw"
       >
-        <ModalOtherPlayerCardDraw gameState={gameState} />
+        <ModalStrategistDraw gameState={gameState} myPlayer={myPlayer} />
+      </Modal>
+
+      <Modal
+        open={
+          lobbyState?.stateLobby != LOBBY_STATES.GAME_PAUSED &&
+          lobbyState?.stateLobby != LOBBY_STATES.GAME_FINISHED_BY_LEAVING &&
+          gameState?.stateGame == GAME_STATES.DIRECTOR_OF_OPERATIONS_SWAP
+        }
+        onClose={() => {}}
+        aria-labelledby="modal-director-of-operations-swap"
+        aria-describedby="modal-director-of-operations-swap"
+      >
+        <ModalDirectorOfOperationsSwap
+          gameState={gameState}
+          myPlayer={myPlayer}
+        />
       </Modal>
 
       <Modal
@@ -158,22 +204,118 @@ export default function Game({ lobbyState, gameState }: Props) {
         aria-labelledby="modal-recap-game"
         aria-describedby="modal-recap-game"
       >
-        <ModalFinishedRound lobbyState={lobbyState} gameState={gameState} />
+        <ModalFinishedGame player={myPlayer} gameState={gameState} />
+      </Modal>
+
+      {/* MODALS USER PLAY */}
+      <Modal
+        open={
+          lobbyState?.stateLobby != LOBBY_STATES.GAME_PAUSED &&
+          lobbyState?.stateLobby != LOBBY_STATES.GAME_FINISHED_BY_LEAVING &&
+          modalTypeCard == NAME_CARD.SECURITY_AGENT
+        }
+        onClose={() => setModalTypeCard(null)}
+        aria-labelledby="modal-play-security-agent"
+      >
+        <ModalPlaySecurityAgent
+          setModalTypeCard={setModalTypeCard}
+          gameState={gameState}
+          myPlayer={myPlayer}
+        />
+      </Modal>
+
+      <Modal
+        open={
+          lobbyState?.stateLobby != LOBBY_STATES.GAME_PAUSED &&
+          lobbyState?.stateLobby != LOBBY_STATES.GAME_FINISHED_BY_LEAVING &&
+          modalTypeCard == NAME_CARD.INFORMANT
+        }
+        onClose={() => setModalTypeCard(null)}
+        aria-labelledby="modal-play-informant"
+      >
+        <ModalPlayInformant
+          setModalTypeCard={setModalTypeCard}
+          gameState={gameState}
+          myPlayer={myPlayer}
+        />
+      </Modal>
+
+      <Modal
+        open={
+          lobbyState?.stateLobby != LOBBY_STATES.GAME_PAUSED &&
+          lobbyState?.stateLobby != LOBBY_STATES.GAME_FINISHED_BY_LEAVING &&
+          modalTypeCard == NAME_CARD.MAGNATE
+        }
+        onClose={() => setModalTypeCard(null)}
+        aria-labelledby="modal-play-magnate"
+      >
+        <ModalPlayMagnate
+          setModalTypeCard={setModalTypeCard}
+          gameState={gameState}
+          myPlayer={myPlayer}
+        />
+      </Modal>
+
+      <Modal
+        open={
+          lobbyState?.stateLobby != LOBBY_STATES.GAME_PAUSED &&
+          lobbyState?.stateLobby != LOBBY_STATES.GAME_FINISHED_BY_LEAVING &&
+          modalTypeCard == NAME_CARD.UNDERCOVER_AGENT
+        }
+        onClose={() => setModalTypeCard(null)}
+        aria-labelledby="modal-play-undercover-agent"
+      >
+        <ModalPlayUndercoverAgent
+          setModalTypeCard={setModalTypeCard}
+          gameState={gameState}
+          myPlayer={myPlayer}
+        />
+      </Modal>
+
+      <Modal
+        open={
+          lobbyState?.stateLobby != LOBBY_STATES.GAME_PAUSED &&
+          lobbyState?.stateLobby != LOBBY_STATES.GAME_FINISHED_BY_LEAVING &&
+          modalTypeCard == NAME_CARD.DIRECTOR_OF_OPERATIONS
+        }
+        onClose={() => setModalTypeCard(null)}
+        aria-labelledby="modal-play-director-of-operations"
+      >
+        <ModalPlayDirectorOfOperations
+          setModalTypeCard={setModalTypeCard}
+          gameState={gameState}
+          myPlayer={myPlayer}
+        />
+      </Modal>
+
+      <Modal
+        open={
+          lobbyState?.stateLobby != LOBBY_STATES.GAME_PAUSED &&
+          lobbyState?.stateLobby != LOBBY_STATES.GAME_FINISHED_BY_LEAVING &&
+          modalTypeCard == NAME_CARD.DOUBLE_AGENT
+        }
+        onClose={() => setModalTypeCard(null)}
+        aria-labelledby="modal-play-double-agent"
+      >
+        <ModalPlayDoubleAgent setModalTypeCard={setModalTypeCard} />
       </Modal>
 
       {/* TOAST CONTAINER */}
       <ToastContainer transition={Slide} />
 
       {/* GAME */}
-      <div className="flex h-screen min-h-screen w-full flex-row pt-20">
+      <div className="flex min-h-screen w-full flex-row pt-12 sm:pt-16 md:pt-20">
         <button
-          className="absolute top-20 left-4 z-50 lg:hidden"
+          className="fixed top-12 left-4 z-50 sm:top-16 md:top-20 lg:hidden"
           onClick={() => setSidebarOpen(true)}
         >
-          <Menu size={28} />
+          <Menu
+            size={36}
+            className="rounded-sm border-1 border-slate-700 bg-black p-2"
+          />
         </button>
 
-        <div className="hidden h-full w-96 pl-4 lg:flex lg:flex-col">
+        <div className="hidden min-h-full w-96 pl-4 lg:flex lg:flex-col">
           <GameInformations player={myPlayer} gameState={gameState} />
         </div>
 
@@ -196,11 +338,18 @@ export default function Game({ lobbyState, gameState }: Props) {
           <GameInformations player={myPlayer} gameState={gameState} />
         </div>
 
-        <div className="flex w-full flex-col items-center gap-8">
-          <RoundInformations gameState={gameState} player={myPlayer} />
+        <div className="flex w-full flex-col items-center gap-4 sm:gap-6">
+          <div className="lg:hidden">
+            <RoundInformations gameState={gameState} player={myPlayer} />
+          </div>
+          <ScoreToReachInformation gameState={gameState} />
+          <MyPlayerDisplay
+            gameState={gameState}
+            myPlayer={myPlayer}
+            handleCardAction={handleCardAction}
+          />
+          <DeckAndDiscardedCards gameState={gameState} />
           <PlayersDisplay gameState={gameState} myPlayer={myPlayer} />
-          <DrawedCardsRound gameState={gameState} />
-          <FoundRemedies gameState={gameState} />
         </div>
       </div>
     </>

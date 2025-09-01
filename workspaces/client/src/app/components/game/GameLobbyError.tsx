@@ -1,8 +1,8 @@
 import LinkButton, { TypeLinkButton } from '@components/buttons/LinkButton';
 import Navbar from '@components/navbar/Navbar';
 import LobbyReconnectToast from '@components/toast/LobbyReconnectToast';
-import { ServerEvents } from '@love-letter/shared/enums/ServerEvents';
-import { ServerPayloads } from '@love-letter/shared/types/ServerPayloads';
+import { ServerEvents } from '@shadow-network/shared/enums/ServerEvents';
+import { ServerPayloads } from '@shadow-network/shared/types/ServerPayloads';
 
 type Props = {
   error: ServerPayloads[ServerEvents.LobbyError] | null;
