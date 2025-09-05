@@ -13,6 +13,11 @@
   --color-even-list-tile: #12131d;
 }
 
+html,
+body {
+  overscroll-behavior: none;
+}
+
 html {
   -webkit-background-size: cover;
   -moz-background-size: cover;
