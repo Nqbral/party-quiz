@@ -18,7 +18,7 @@ const PLAYER_COLORS = [
   'violet-400',
   'purple-400',
   'cyan-400',
-  'rose-950',
+  'pink-400',
   'green-500',
   'slate-500',
 ];
