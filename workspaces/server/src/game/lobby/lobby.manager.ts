@@ -40,6 +40,14 @@ export class LobbyManager {
       return;
     }
 
+    if (
+      client.lobby?.stateLobby != LOBBY_STATES.IN_LOBBY &&
+      client.lobby != null
+    ) {
+      this.deleteLobby(client, client.lobby.id);
+      return;
+    }
+
     client.lobby?.removeClient(client);
 
     client.lobby = null;
