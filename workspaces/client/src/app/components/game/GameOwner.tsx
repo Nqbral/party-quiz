@@ -1,5 +1,4 @@
 import RedButton from '@components/buttons/RedButton';
-import Footer from '@components/footer/Footer';
 import { useSocket } from '@contexts/SocketContext';
 import { QcmValidateQuestion } from '@party-quiz/shared/classes/questions/QcmValidateQuestion';
 import { TextQuestionValidationQuestion } from '@party-quiz/shared/classes/questions/TextQuestionValidationQuestion';
@@ -77,7 +76,6 @@ export default function GameOwner({ gameState }: Props) {
           )}
         </>
       )}
-      <Footer />
     </div>
   );
 }
