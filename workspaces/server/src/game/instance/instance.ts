@@ -47,11 +47,6 @@ export class Instance {
         ['Tiktok', 'Uber Eats', 'Bonjour RATP', 'Marmiton'],
         2,
       ),
-      new CloseNumberQuestion(
-        'À votre avis, ça correspond à combien de départs en vacances avec Manon ?',
-        267,
-        0,
-      ),
       new QcmQuestion(
         'Quelle est la phrase préférée de Manon ?',
         [
@@ -61,6 +56,11 @@ export class Instance {
           "Est-ce que tu m'aimes ?",
         ],
         3,
+      ),
+      new CloseNumberQuestion(
+        'À votre avis, ça correspond à combien de départs en vacances avec Manon ?',
+        267,
+        0,
       ),
       new QcmQuestion(
         'Si Manon devait donner une conférence TED Talk, ça serait sur quoi ?',
@@ -124,7 +124,7 @@ export class Instance {
       ),
       new CloseNumberQuestion(
         'Combien de jeux de mots il y a sur cette photo ?',
-        7,
+        6,
         0,
       ),
       new QcmQuestion(

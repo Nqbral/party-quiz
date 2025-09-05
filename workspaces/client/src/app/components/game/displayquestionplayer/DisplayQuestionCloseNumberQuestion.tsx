@@ -75,6 +75,7 @@ export default function DisplayQuestionPlayerCloseNumberQuestion({
             ? question.maximum
             : undefined
         }
+        inputMode="numeric"
         step="1"
         value={value}
         onChange={handleChange}

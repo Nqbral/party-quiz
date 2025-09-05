@@ -13,7 +13,7 @@ export default function DisplayQuestionOwnerCloseNumberQuestion({
     <>
       {indexQuestion !== null &&
         indexQuestion !== undefined &&
-        indexQuestion == 1 && (
+        indexQuestion == 2 && (
           <div className="flex h-full w-full max-w-4xl flex-col items-center justify-center gap-4 text-center">
             <Image
               src={QuestionEau}

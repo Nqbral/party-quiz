@@ -1,5 +1,6 @@
 import PrimaryButton from '@components/buttons/PrimaryButton';
 import RedButton from '@components/buttons/RedButton';
+import Footer from '@components/footer/Footer';
 import { useSocket } from '@contexts/SocketContext';
 import { CLIENT_EVENTS } from '@party-quiz/shared/consts/ClientEvents';
 import { ServerEvents } from '@party-quiz/shared/enums/ServerEvents';
@@ -84,6 +85,7 @@ export default function GameLobby({ lobbyState }: Props) {
           </div>
         </>
       )}
+      <Footer />
     </div>
   );
 }
