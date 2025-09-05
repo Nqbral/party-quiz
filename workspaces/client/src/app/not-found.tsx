@@ -12,7 +12,7 @@ export default function NotFound() {
   return (
     <>
       <Navbar />
-      <div className="flex min-h-screen flex-col items-center justify-center gap-6">
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-6">
         <h1 className="text-primary text-4xl">Page introuvable !</h1>
         <LinkButton
           buttonText="Retour à la page principale"

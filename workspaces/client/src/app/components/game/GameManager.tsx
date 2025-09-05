@@ -112,7 +112,7 @@ export default function GameManager() {
     return (
       <>
         <Navbar />
-        <div className="flex min-h-screen w-full flex-col items-center justify-center">
+        <div className="flex min-h-dvh w-full flex-col items-center justify-center">
           <MagnifyingGlass
             visible={true}
             height="80"

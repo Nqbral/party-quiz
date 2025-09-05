@@ -23,7 +23,7 @@ export default function GameOwner({ gameState }: Props) {
 
   const handleDelete = () => emitEvent(CLIENT_EVENTS.LOBBY_DELETE, undefined);
   return (
-    <div className="flex min-h-screen w-full flex-row pt-12 sm:pt-16 md:pt-20">
+    <div className="flex min-h-dvh w-full flex-row pt-12 sm:pt-16 md:pt-20">
       {gameState?.stateGame == GAME_STATES.GAME_FINISHED ? (
         <div className="flex w-full flex-col items-center justify-center gap-4 text-center sm:p-8">
           <DisplayScoreOwner gameState={gameState} />

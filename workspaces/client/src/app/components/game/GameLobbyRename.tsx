@@ -22,7 +22,7 @@ export default function GameLobbyRename() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 text-sm sm:text-base">
+    <div className="flex min-h-dvh flex-col items-center justify-center gap-6 text-sm sm:text-base">
       <form
         onSubmit={handleSubmit}
         className="flex flex-col items-center gap-4 text-center"

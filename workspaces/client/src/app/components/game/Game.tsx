@@ -41,7 +41,7 @@ export default function Game({ gameState }: Props) {
   return (
     <>
       {/* GAME */}
-      <div className="flex min-h-screen w-full flex-row pt-12 sm:pt-16 md:pt-20">
+      <div className="flex w-full flex-row pt-12 sm:pt-16 md:pt-20">
         <div className="flex w-full flex-col items-center gap-4 px-4 sm:gap-6">
           <RoundInformationsPlayer gameState={gameState} player={myPlayer} />
           {(gameState?.stateGame == GAME_STATES.QCM_QUESTION ||

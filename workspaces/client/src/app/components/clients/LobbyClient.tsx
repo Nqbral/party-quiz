@@ -39,7 +39,7 @@ export default function LobbyClient() {
   return (
     <>
       <Navbar />
-      <div className="flex h-full min-h-screen w-full flex-col items-center justify-center gap-2 sm:gap-4">
+      <div className="flex h-full min-h-dvh w-full flex-col items-center justify-center gap-2 sm:gap-4">
         <Image
           src={PartyQuizLogo}
           alt="party-quiz-logo"

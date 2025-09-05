@@ -27,7 +27,7 @@ export default function Home() {
       <Suspense>
         <Navbar />
       </Suspense>
-      <div className="flex h-full min-h-screen w-full flex-col items-center justify-center gap-6">
+      <div className="flex h-full min-h-dvh w-full flex-col items-center justify-center gap-6">
         <Image
           src={PartyQuizLogo}
           alt="party-quiz-logo"

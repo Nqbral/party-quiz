@@ -5,7 +5,7 @@ export default function GameLobbyDeleted() {
   return (
     <>
       <Navbar />
-      <div className="flex min-h-screen flex-col items-center justify-center gap-6">
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-6">
         <h1 className="text-primary text-xl sm:text-2xl md:text-4xl">
           Lobby supprimé
         </h1>

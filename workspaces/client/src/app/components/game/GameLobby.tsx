@@ -28,7 +28,7 @@ export default function GameLobby({ lobbyState }: Props) {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 text-sm sm:text-base">
+    <div className="flex min-h-dvh flex-col items-center justify-center gap-6 text-sm sm:text-base">
       {isOwner ? (
         <div className="flex flex-row items-center gap-16">
           <div className="flex flex-col items-center gap-4">
