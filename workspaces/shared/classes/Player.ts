@@ -1,16 +1,11 @@
-import { Card } from "./Card";
-
 export class Player {
   public color: string = "";
-  public ready: boolean = false;
-  public hand: Card[] = [];
-  public activeCards: Card[] = [];
-  public alive: boolean = true;
   public score: number = 0;
+  public isRenamed: boolean = false;
+  public answer: string | number | null = null;
+  public hasAnswered: boolean = false;
+  public scoreThisRound: number = 0;
+  public userName: string = "";
 
-  constructor(
-    public readonly userId: string,
-    public readonly userName: string,
-    public disconnected: boolean = false
-  ) {}
+  constructor(public readonly clientId: string) {}
 }

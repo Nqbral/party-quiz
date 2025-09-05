@@ -1,8 +1,7 @@
-import { useAuth } from '@contexts/AuthContext';
 import { SocketManager } from '@lib/SocketManager';
 import { Listener } from '@lib/SocketManager';
-import { ServerEvents } from '@shadow-network/shared/enums/ServerEvents';
-import { ClientSocketEvents } from '@shadow-network/shared/types/ClientSocketEvents';
+import { ServerEvents } from '@party-quiz/shared/enums/ServerEvents';
+import { ClientSocketEvents } from '@party-quiz/shared/types/ClientSocketEvents';
 import React, {
   createContext,
   useContext,
@@ -20,7 +19,7 @@ type SocketContextType = {
   addListener: <T>(event: ServerEvents, listener: Listener<T>) => void;
   removeListener: <T>(event: ServerEvents, listener: Listener<T>) => void;
   isConnectedSocket: boolean;
-  userId: string | null;
+  clientId: string | null;
   lastLobby: string | null;
 };
 
@@ -36,37 +35,23 @@ export const useSocket = () => {
 
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const socketManagerRef = useRef(new SocketManager());
-  const { accessToken } = useAuth();
   const [isConnectedSocket, setIsConnectedSocket] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [clientId, setClientId] = useState<string | null>(null);
   const [lastLobby, setLastLobby] = useState<string | null>(null);
 
   useEffect(() => {
-    if (accessToken) {
-      if (socketManagerRef.current.isInit) {
-        socketManagerRef.current.updateToken(accessToken);
-        setIsConnectedSocket(true);
-
-        return;
-      }
-
-      socketManagerRef.current.connect(accessToken);
-      setIsConnectedSocket(true);
-      return;
-    }
-
-    setIsConnectedSocket(false);
-    socketManagerRef.current.disconnect();
-  }, [accessToken, setIsConnectedSocket]);
+    socketManagerRef.current.connect();
+    return;
+  }, [setIsConnectedSocket]);
 
   useEffect(() => {
     const socketManager = socketManagerRef.current;
 
-    if (!socketManager || !isConnectedSocket) return;
+    if (!socketManager) return;
 
-    const onAuthenticated = (payload: { userId: string; lobbyId: string }) => {
-      setUserId(payload.userId);
-      setLastLobby(payload.lobbyId);
+    const onAuthenticated = (payload: { clientId: string }) => {
+      setClientId(payload.clientId);
+      setIsConnectedSocket(true);
     };
 
     const onLobbyJoin = (payload: { lobbyId: string }) => {
@@ -111,7 +96,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         addListener,
         removeListener,
         isConnectedSocket,
-        userId,
+        clientId: clientId,
         lastLobby,
       }}
     >

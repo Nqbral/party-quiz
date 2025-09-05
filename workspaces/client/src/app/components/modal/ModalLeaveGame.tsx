@@ -1,7 +1,7 @@
 import RedButton from '@components/buttons/RedButton';
 import SecondaryButton from '@components/buttons/SecondaryButton';
 import { useSocket } from '@contexts/SocketContext';
-import { CLIENT_EVENTS } from '@shadow-network/shared/consts/ClientEvents';
+import { CLIENT_EVENTS } from '@party-quiz/shared/consts/ClientEvents';
 import { useRouter } from 'next/navigation';
 
 import ModalTemplate from './ModalTemplate';

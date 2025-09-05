@@ -19,6 +19,21 @@ const PLAYER_COLORS = [
   'purple-400',
   'cyan-400',
   'rose-950',
+  'green-500',
+  'slate-500',
+];
+
+const PLAYERS_NAMES = [
+  "Yoda's lovers",
+  'Gamemasters',
+  'Cesar slaves',
+  'Masterchief fans',
+  'Run Forest, RUN',
+  'Monstres & Cie',
+  'Fight Club',
+  'The Escapes',
+  'Nom de Zeus',
+  'Texas Massacre',
 ];
 
 export class Lobby {
@@ -34,25 +49,23 @@ export class Lobby {
 
   public players: Player[] = [];
 
-  public readonly instance: Instance = new Instance(this, this.httpService);
+  public readonly instance: Instance = new Instance(this);
 
   constructor(
     private readonly server: Server,
     public readonly owner: AuthenticatedSocket,
-    private readonly httpService: HttpService,
   ) {}
 
+  public addOwner(newOwner: AuthenticatedSocket): void {
+    this.clients.push(newOwner);
+    newOwner.join(this.id);
+
+    newOwner.lobby = this;
+  }
+
   public addClient(newClient: AuthenticatedSocket): void {
-    const existing = this.players.find((p) => p.userId === newClient.userId);
-
-    if (existing) {
-      existing.disconnected = false;
-      newClient.join(this.id);
-      newClient.lobby = this;
-
-      this.unPauseGame();
-      this.dispatchLobbyState();
-      return;
+    if (this.clients.find((c) => c.id === newClient.id)) {
+      throw new WsException('Client already in lobby');
     }
 
     if (
@@ -76,12 +89,12 @@ export class Lobby {
       return;
     }
 
-    if (this.clients.length >= 8) {
+    if (this.players.length >= 10) {
       this.server.to(newClient.id).emit(ServerEvents.LobbyError, {
-        error: 'Lobby full',
-        message: 'La partie est déjà pleine.',
+        error: 'Lobby in progress',
+        message: 'Trop de personnes dans la partie.',
       });
-      throw new WsException('Trop de joueurs');
+      return;
     }
 
     this.clients.push(newClient);
@@ -89,19 +102,29 @@ export class Lobby {
 
     newClient.lobby = this;
 
-    this.players.push(new Player(newClient.userId, newClient.userName));
+    this.players.push(new Player(newClient.id));
+
     this.initColorsPlayers();
+    this.initNamesPlayers();
 
     this.dispatchLobbyState();
   }
 
   public getPlayerById(userId: string): Player | undefined {
-    return this.players.find((p) => p.userId === userId);
+    return this.players.find((p) => p.clientId === userId);
   }
 
-  public removeClient(userId: string): void {
-    this.clients = this.clients.filter((c) => c.userId !== userId);
-    this.players = this.players.filter((p) => p.userId !== userId);
+  public removeClient(client: AuthenticatedSocket): void {
+    if (client.id !== this.owner.id) {
+      if (this.stateLobby !== LOBBY_STATES.IN_LOBBY) {
+        this.deleteLobby();
+        return;
+      }
+      this.leaveLobby(client);
+      return;
+    }
+
+    this.deleteLobby();
   }
 
   private initColorsPlayers(): void {
@@ -110,40 +133,23 @@ export class Lobby {
     });
   }
 
+  private initNamesPlayers(): void {
+    this.players.forEach((player, index) => {
+      player.userName = PLAYERS_NAMES[index];
+    });
+  }
+
   public startGame(client: AuthenticatedSocket): void {
     this.instance.triggerStart(client);
   }
 
-  public pauseGame(): void {
-    this.stateBeforePause = this.stateLobby;
-    this.stateLobby = LOBBY_STATES.GAME_PAUSED;
-
-    this.instance.clearTimeout();
-    this.dispatchLobbyState();
-  }
-
-  public unPauseGame(): void {
-    const playersDisconnected = this.players.filter((p) => p.disconnected);
-
-    if (
-      playersDisconnected.length == 0 &&
-      this.stateLobby == LOBBY_STATES.GAME_PAUSED
-    ) {
-      this.stateLobby = this.stateBeforePause;
-      this.instance.launchTimeoutContinueGame();
-      this.stateBeforePause = '';
-    }
-  }
-
   public leaveLobby(client: AuthenticatedSocket): void {
-    this.removeClient(client.userId);
     client.lobby = null;
     client.leave(this.id);
     client.emit(ServerEvents.LobbyLeave);
 
-    if (this.stateLobby !== LOBBY_STATES.IN_LOBBY) {
-      this.stateLobby = LOBBY_STATES.GAME_FINISHED_BY_LEAVING;
-    }
+    this.players = this.players.filter((p) => p.clientId !== client.id);
+    this.clients = this.clients.filter((c) => c.id !== client.id);
 
     this.dispatchLobbyState();
   }
@@ -158,7 +164,7 @@ export class Lobby {
     this.updatedAt = new Date();
     const payload: ServerPayloads[ServerEvents.LobbyState] = {
       lobbyId: this.id,
-      ownerId: this.owner.userId,
+      ownerId: this.owner.id,
       stateLobby: this.stateLobby,
       players: this.players,
     };

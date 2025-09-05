@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['@shadow-network/shared'],
+  transpilePackages: ['@party-quiz/shared'],
   devIndicators: false,
   async headers() {
     return [

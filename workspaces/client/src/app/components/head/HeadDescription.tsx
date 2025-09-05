@@ -22,10 +22,10 @@ export default function HeadDescription() {
       />
       <meta
         property="og:url"
-        content="https://shadow-network.nqbral-games.fr"
+        content="https://party-quiz.nqbral-games.fr"
       />
       <meta property="og:type" content="website" />
-      <link rel="canonical" href="https://shadow-network.nqbral-games.fr" />
+      <link rel="canonical" href="https://party-quiz.nqbral-games.fr" />
     </Head>
   );
 }

@@ -8,7 +8,7 @@ import SecretOperatorImg from '@public/secret_operator.png';
 import SecurityAgentImg from '@public/security_guard.png';
 import StrategistImg from '@public/strategist.png';
 import UndercoverAgentImg from '@public/undercover_agent.png';
-import { NAME_CARD } from '@shadow-network/shared/consts/NameCard';
+import { NAME_CARD } from '@party-quiz/shared/consts/NameCard';
 import Image from 'next/image';
 
 type Props = {

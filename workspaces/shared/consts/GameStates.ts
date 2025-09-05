@@ -1,11 +1,17 @@
 export const GAME_STATES = {
-  STARTED: "game.state.started",
-  SECURITY_AGENT_GUESS: "game.state.security.agent.guess",
-  INFORMANT_CHECK: "game.state.informant.check",
-  MAGNATE_COMPARISON: "game.state.magnate.comparison",
-  UNDERCOVER_AGENT_DISCARD: "game.state.undercover.agent.discard",
-  STRATEGIST_DRAW: "game.state.strategist.draw",
-  DIRECTOR_OF_OPERATIONS_SWAP: "game.state.director.of.operations.swap",
-  RECAP_ROUND: "game.state.recap.round",
+  QCM_QUESTION: "game.state.qcm.question",
+  QCM_QUESTION_SHOW_ANSWER: "game.state.qcm.question.show.answer",
+  QCM_QUESTION_VALIDATE: "game.state.qcm.question.validate",
+  QCM_QUESTION_VALIDATE_OWNER: "game.state.qcm.question.validate.owner",
+  QCM_QUESTION_VALIDATE_SHOW_ANSWER:
+    "game.state.qcm.question.validate.show.answer",
+  CLOSE_NUMBER_QUESTION: "game.state.close.number.question",
+  CLOSE_NUMBER_QUESTION_SHOW_ANSWER:
+    "game.state.close.number.question.show.answer",
+  TEXT_QUESTION_VALIDATION: "game.state.text.question.validation",
+  TEXT_QUESTION_VALIDATION_VALIDATION:
+    "game.state.text.question.validation.validation",
+  TEXT_QUESTION_VALIDATION_SHOW_ANSWER:
+    "game.state.text.question.validation.show.answer",
   GAME_FINISHED: "game.state.finished",
 } as const;

@@ -1,11 +1,6 @@
-import { ClientSocketEvents } from '@shadow-network/shared/types/ClientSocketEvents';
-import { AUTH_EVENTS } from '@shadow-network/shared/consts/AuthEvents';
-import { ServerEvents } from '@shadow-network/shared/enums/ServerEvents';
+import { ClientSocketEvents } from '@party-quiz/shared/types/ClientSocketEvents';
+import { ServerEvents } from '@party-quiz/shared/enums/ServerEvents';
 import { io, Socket } from 'socket.io-client';
-
-interface SocketAuth {
-  token: string;
-}
 
 export type Listener<T> = (data: T) => void;
 
@@ -17,14 +12,12 @@ export class SocketManager {
 
   constructor() {}
 
-  connect(token: string) {
+  connect() {
     this.socket = io(process.env.NEXT_PUBLIC_WS_API_SOCKET_URL as string, {
-      auth: { token },
       transports: ['websocket'],
       withCredentials: true,
     });
 
-    this.token = token;
     this.isInit = true;
 
     this.socket.on('connect', () => {
@@ -40,19 +33,6 @@ export class SocketManager {
     if (this.socket) {
       this.socket.disconnect();
       this.isInit = false;
-    }
-  }
-
-  updateToken(newToken: string) {
-    this.token = newToken;
-
-    if (this.socket) {
-      if (this.socket.connected) {
-        this.socket.emit(AUTH_EVENTS.UPDATE_TOKEN, { token: newToken });
-        return;
-      }
-
-      (this.socket.auth as SocketAuth).token = newToken;
     }
   }
 

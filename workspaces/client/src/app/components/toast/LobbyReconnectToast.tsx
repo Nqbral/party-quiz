@@ -3,7 +3,7 @@
 import LinkButton, { TypeLinkButton } from '@components/buttons/LinkButton';
 import RedButton from '@components/buttons/RedButton';
 import { useSocket } from '@contexts/SocketContext';
-import { CLIENT_EVENTS } from '@shadow-network/shared/consts/ClientEvents';
+import { CLIENT_EVENTS } from '@party-quiz/shared/consts/ClientEvents';
 import { useEffect, useState } from 'react';
 
 export default function LobbyReconnectToast() {

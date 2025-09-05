@@ -1,45 +1,36 @@
-import { Card } from '@shared/classes/Card';
-import { IsNumber, IsString } from 'class-validator';
+import { IsArray, IsNumber, IsString } from 'class-validator';
 
 export class LobbyJoinDto {
   @IsString()
   lobbyIdJoin: string;
 }
 
-export class PlayWithoutEffectDto {
+export class LobbyRenameDto {
   @IsString()
-  cardPlayed: string;
+  newName: string;
 }
 
-export class PlaySecurityAgentDto {
-  @IsString()
-  cardGuessed: string;
-
-  @IsString()
-  playerTargetedId: string;
+export class GameOwnerValidateQcmQuestionDto {
+  @IsNumber()
+  answerIndex: number;
 }
 
-export class PlayInformantDto {
-  @IsString()
-  playerTargetedId: string;
+export class GameOwnerValidateTextQuestionDto {
+  @IsArray()
+  correctPlayers: string[];
 }
 
-export class PlayMagnateDto {
-  @IsString()
-  playerTargetedId: string;
+export class PlayerSubmitQcmAnswerDto {
+  @IsNumber()
+  answerIndex: number;
 }
 
-export class PlayUndercoverAgentDto {
-  @IsString()
-  playerTargetedId: string;
+export class PlayerSubmitCloseNumberAnswerDto {
+  @IsNumber()
+  answer: number;
 }
 
-export class PlayStrategistPartTwoDto {
-  indexCardsDiscarded: number[];
-  cardsDiscarded: Card[];
-}
-
-export class PlayDirectorOfOperationsDto {
+export class PlayerSubmitTextAnswerDto {
   @IsString()
-  playerTargetedId: string;
+  answer: string;
 }

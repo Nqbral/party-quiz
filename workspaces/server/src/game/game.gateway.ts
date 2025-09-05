@@ -1,11 +1,5 @@
-import { AuthService } from '@app/auth/auth.service';
-import { CurrentUser } from '@app/auth/decorators/current-user.decorator';
-import { JwtWsGuard } from '@app/auth/guards/jwt-ws.guard';
-import { AttachUserInterceptor } from '@app/auth/interceptors/attach-user.interceptor';
 import { LobbyManager } from '@app/game/lobby/lobby.manager';
 import { AuthenticatedSocket } from '@app/types/AuthenticatedSocket';
-import { HttpService } from '@nestjs/axios';
-import { Injectable, UseGuards, UseInterceptors } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -16,21 +10,19 @@ import {
   WebSocketServer,
   WsException,
 } from '@nestjs/websockets';
-import { AUTH_EVENTS } from '@shared/consts/AuthEvents';
 import { CLIENT_EVENTS } from '@shared/consts/ClientEvents';
 import { LOBBY_STATES } from '@shared/consts/LobbyStates';
-import { NAME_CARD } from '@shared/consts/NameCard';
 import { ServerEvents } from '@shared/enums/ServerEvents';
 import { Server } from 'socket.io';
 
 import {
+  GameOwnerValidateQcmQuestionDto,
+  GameOwnerValidateTextQuestionDto,
   LobbyJoinDto,
-  PlayDirectorOfOperationsDto,
-  PlayInformantDto,
-  PlaySecurityAgentDto,
-  PlayStrategistPartTwoDto,
-  PlayUndercoverAgentDto,
-  PlayWithoutEffectDto,
+  LobbyRenameDto,
+  PlayerSubmitCloseNumberAnswerDto,
+  PlayerSubmitQcmAnswerDto,
+  PlayerSubmitTextAnswerDto,
 } from './lobby/dtos';
 
 @WebSocketGateway()
@@ -40,162 +32,62 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   public playerConnections: Map<string, AuthenticatedSocket[]> = new Map();
 
-  constructor(
-    private readonly authService: AuthService,
-    private lobbyManager: LobbyManager,
-  ) {}
+  constructor(private lobbyManager: LobbyManager) {}
 
   afterInit(server: Server): any {
     this.lobbyManager.server = server;
     this.lobbyManager.setGameGateway(this);
   }
 
-  async handleConnection(client: any) {
-    const token = client.handshake.auth?.token;
+  async handleConnection(client: any, ...args: any[]): Promise<void> {
+    this.lobbyManager.initializeSocket(client as AuthenticatedSocket);
 
-    if (!token) {
-      client.disconnect();
-      return;
-    }
+    const existingSockets = this.playerConnections.get(client.id) || [];
+    this.playerConnections.set(client.id, [...existingSockets, client]);
 
-    try {
-      const payload = await this.authService.verifyToken(token);
-      client.user = payload;
-      client.userId = client.user.sub;
-      client.userName = await this.authService.getUsername(token);
-      client.token = token;
-      const lastLobbyId = this.lobbyManager.getLastLobbyForUser(client.userId);
-
-      if (lastLobbyId) {
-        client.lobby = this.lobbyManager.getLobby(client, lastLobbyId);
-        client.lobby.addClient(client);
-      }
-
-      const existingSockets = this.playerConnections.get(client.userId) || [];
-      this.playerConnections.set(client.userId, [...existingSockets, client]);
-
-      client.emit(ServerEvents.Authenticated, {
-        userId: client.userId,
-        lobbyId: lastLobbyId,
-      });
-    } catch (err) {
-      client.disconnect();
-    }
+    client.emit(ServerEvents.Authenticated, {
+      clientId: client.id,
+    });
   }
 
-  async handleDisconnect(client: AuthenticatedSocket) {
-    const existingSockets = this.playerConnections.get(client.userId) || [];
-
-    if (existingSockets.length == 0) return;
-
-    const updatedSockets = existingSockets.filter(
-      (socket) => socket.id !== client.id,
-    );
-
-    if (updatedSockets.length === 0) {
-      this.playerConnections.delete(client.userId);
-    } else {
-      this.playerConnections.set(client.userId, updatedSockets);
-    }
-
-    if (!client.lobby) return;
-
-    const lobby = client.lobby;
-    const player = lobby.getPlayerById?.(client.userId);
-
-    if (updatedSockets.length === 0 && player) {
-      if (lobby.stateLobby == LOBBY_STATES.IN_LOBBY) {
-        if (lobby.owner.userId == client.userId) {
-          this.lobbyManager.deleteLobby(client, lobby.id);
-          return;
-        }
-        lobby.removeClient(client.userId);
-        client.leave(lobby.id);
-        this.lobbyManager.clearLastLobbyForUser(client.userId);
-        client.emit(ServerEvents.LobbyLeave);
-      } else {
-        player.disconnected = true;
-        lobby.pauseGame();
-        return;
-      }
-
-      lobby.dispatchLobbyState();
-      return;
-    }
+  async handleDisconnect(client: any): Promise<void> {
+    // Handle termination of socket
+    this.lobbyManager.terminateSocket(client);
   }
 
-  @SubscribeMessage(AUTH_EVENTS.UPDATE_TOKEN)
-  async handleUpdateToken(
-    @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() payload: { token: string },
-  ) {
-    try {
-      const { token } = payload;
-
-      const user = await this.authService.verifyToken(token);
-      client.userId = user.sub; // Met à jour le userId sur la connexion existante
-      client.userName = await this.authService.getUsername(token);
-      client.token = token;
-      const lastLobbyId = this.lobbyManager.getLastLobbyForUser(client.userId);
-
-      if (lastLobbyId) {
-        client.lobby = this.lobbyManager.getLobby(client, lastLobbyId);
-      }
-
-      client.emit(ServerEvents.Authenticated, {
-        userId: client.userId,
-        lobbyId: lastLobbyId,
-      });
-    } catch (err) {
-      console.error('Erreur lors de la mise à jour du token', err);
-      client.disconnect(); // Déconnecte si le nouveau token est invalide
-      return { success: false, message: 'Token invalide' };
-    }
-  }
-
-  @UseGuards(JwtWsGuard)
-  @UseInterceptors(AttachUserInterceptor)
   @SubscribeMessage(CLIENT_EVENTS.LOBBY_CREATE)
-  async createLobby(
-    @ConnectedSocket() client: AuthenticatedSocket,
-    @CurrentUser() user: any,
-  ) {
-    this.lobbyManager.createLobby(client, user);
+  async createLobby(@ConnectedSocket() client: AuthenticatedSocket) {
+    this.lobbyManager.createLobby(client);
   }
 
-  @UseGuards(JwtWsGuard)
-  @UseInterceptors(AttachUserInterceptor)
   @SubscribeMessage(CLIENT_EVENTS.LOBBY_JOIN)
   onLobbyJoin(
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: LobbyJoinDto,
-    @CurrentUser() user: any,
   ): void {
-    this.lobbyManager.joinLobby(data.lobbyIdJoin, client, user);
+    this.lobbyManager.joinLobby(data.lobbyIdJoin, client);
   }
 
-  @UseGuards(JwtWsGuard)
   @SubscribeMessage(CLIENT_EVENTS.LOBBY_START_GAME)
   handleStartGame(@ConnectedSocket() client: AuthenticatedSocket) {
     const lobby = client.lobby;
 
     if (!lobby) throw new WsException('Lobby introuvable');
 
-    if (lobby.owner.userId !== client.userId) {
+    if (lobby.owner.id !== client.id) {
       throw new WsException("Vous n'êtes pas le propriétaire du lobby.");
     }
 
     lobby.startGame(client);
   }
 
-  @UseGuards(JwtWsGuard)
   @SubscribeMessage(CLIENT_EVENTS.LOBBY_LEAVE)
   handleLeaveGame(@ConnectedSocket() client: AuthenticatedSocket) {
     const lobby = client.lobby;
 
     if (!lobby) throw new WsException('Lobby introuvable');
 
-    this.lobbyManager.clearLastLobbyForUser(client.userId);
+    this.lobbyManager.clearLastLobbyForUser(client.id);
     this.lobbyManager.emitEventForAllConnexionsClient(
       client,
       ServerEvents.LobbyLeave,
@@ -204,7 +96,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (
       lobby.stateLobby === LOBBY_STATES.IN_LOBBY &&
-      lobby.owner.userId === client.userId
+      lobby.owner.id === client.id
     ) {
       this.lobbyManager.deleteLobby(client, lobby.id);
       return;
@@ -213,168 +105,109 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     lobby.leaveLobby(client);
   }
 
-  @UseGuards(JwtWsGuard)
   @SubscribeMessage(CLIENT_EVENTS.LOBBY_DELETE)
   handleDeleteLobby(@ConnectedSocket() client: AuthenticatedSocket) {
     const lobby = client.lobby;
 
     if (!lobby) throw new WsException('Lobby introuvable');
 
-    if (lobby.owner.userId !== client.userId) {
+    if (lobby.owner.id !== client.id) {
       throw new WsException("Vous n'êtes pas le propriétaire du lobby.");
     }
 
     this.lobbyManager.deleteLobby(client, lobby.id);
   }
 
-  @UseGuards(JwtWsGuard)
-  @SubscribeMessage(CLIENT_EVENTS.GAME_READY)
-  onGameReady(@ConnectedSocket() client: AuthenticatedSocket) {
-    const lobby = client.lobby;
-
-    if (!lobby) throw new WsException('Lobby introuvable');
-
-    lobby.instance.onGameReady(client);
-  }
-
-  @UseGuards(JwtWsGuard)
-  @SubscribeMessage(CLIENT_EVENTS.GAME_PLAY_WITHOUT_EFFECT)
-  onPlayCardWithoutEffect(
+  @SubscribeMessage(CLIENT_EVENTS.LOBBY_RENAME)
+  onLobbyRename(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: PlayWithoutEffectDto,
+    @MessageBody() data: LobbyRenameDto,
   ) {
     const lobby = client.lobby;
 
     if (!lobby) throw new WsException('Lobby introuvable');
 
-    lobby.instance.playCardWithoutEffect(client, data.cardPlayed);
+    lobby.instance.renamePlayer(client, data.newName);
   }
 
-  @UseGuards(JwtWsGuard)
-  @SubscribeMessage(CLIENT_EVENTS.GAME_PLAY_SECRET_OPERATOR)
-  onPlaySecretOperator(@ConnectedSocket() client: AuthenticatedSocket) {
+  @SubscribeMessage(CLIENT_EVENTS.GAME_OWNER_NEXT_EVENT)
+  handleNextEvent(@ConnectedSocket() client: AuthenticatedSocket) {
     const lobby = client.lobby;
 
     if (!lobby) throw new WsException('Lobby introuvable');
 
-    lobby.instance.playCard(client, NAME_CARD.SECRET_OPERATOR, undefined);
+    if (lobby.owner.id !== client.id) {
+      throw new WsException("Vous n'êtes pas le propriétaire du lobby.");
+    }
+
+    lobby.instance.nextEvent();
   }
 
-  @UseGuards(JwtWsGuard)
-  @SubscribeMessage(CLIENT_EVENTS.GAME_PLAY_SECURITY_AGENT)
-  onPlaySecurityAgent(
+  @SubscribeMessage(CLIENT_EVENTS.GAME_OWNER_VALIDATE_QCM_QUESTION)
+  onSubmitOwnerValidateQcmQuestion(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: PlaySecurityAgentDto,
+    @MessageBody() data: GameOwnerValidateQcmQuestionDto,
   ) {
     const lobby = client.lobby;
 
     if (!lobby) throw new WsException('Lobby introuvable');
 
-    lobby.instance.playCard(client, NAME_CARD.SECURITY_AGENT, data);
+    if (lobby.owner.id !== client.id) {
+      throw new WsException("Vous n'êtes pas le propriétaire du lobby.");
+    }
+
+    lobby.instance.ownerValidateQcm(data.answerIndex);
   }
 
-  @UseGuards(JwtWsGuard)
-  @SubscribeMessage(CLIENT_EVENTS.GAME_PLAY_INFORMANT)
-  onPlayInformant(
+  @SubscribeMessage(CLIENT_EVENTS.GAME_OWNER_VALIDATE_TEXT_QUESTION)
+  onSubmitOwnerValidateTextQuestion(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: PlayInformantDto,
+    @MessageBody() data: GameOwnerValidateTextQuestionDto,
   ) {
     const lobby = client.lobby;
 
     if (!lobby) throw new WsException('Lobby introuvable');
 
-    lobby.instance.playCard(client, NAME_CARD.INFORMANT, data);
+    if (lobby.owner.id !== client.id) {
+      throw new WsException("Vous n'êtes pas le propriétaire du lobby.");
+    }
+
+    lobby.instance.ownerValidateText(data.correctPlayers);
   }
 
-  @UseGuards(JwtWsGuard)
-  @SubscribeMessage(CLIENT_EVENTS.GAME_PLAY_MAGNATE)
-  onPlayMagnate(
+  @SubscribeMessage(CLIENT_EVENTS.PLAYER_SUBMIT_QCM_ANSWER)
+  onSubmitAnswerQcm(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: PlayInformantDto,
+    @MessageBody() data: PlayerSubmitQcmAnswerDto,
   ) {
     const lobby = client.lobby;
 
     if (!lobby) throw new WsException('Lobby introuvable');
 
-    lobby.instance.playCard(client, NAME_CARD.MAGNATE, data);
+    lobby.instance.answerQcm(client, data.answerIndex);
   }
 
-  @UseGuards(JwtWsGuard)
-  @SubscribeMessage(CLIENT_EVENTS.GAME_PLAY_DISCREET_ASSISTANT)
-  onPlayDiscreetAssistant(@ConnectedSocket() client: AuthenticatedSocket) {
-    const lobby = client.lobby;
-
-    if (!lobby) throw new WsException('Lobby introuvable');
-
-    lobby.instance.playCard(client, NAME_CARD.DISCREET_ASSISTANT, undefined);
-  }
-
-  @UseGuards(JwtWsGuard)
-  @SubscribeMessage(CLIENT_EVENTS.GAME_PLAY_UNDERCOVER_AGENT)
-  onPlayUndercoverAgent(
+  @SubscribeMessage(CLIENT_EVENTS.PLAYER_SUBMIT_TEXT_ANSWER)
+  onSubmitTextAnswer(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: PlayUndercoverAgentDto,
+    @MessageBody() data: PlayerSubmitTextAnswerDto,
   ) {
     const lobby = client.lobby;
 
     if (!lobby) throw new WsException('Lobby introuvable');
 
-    lobby.instance.playCard(client, NAME_CARD.UNDERCOVER_AGENT, data);
+    lobby.instance.answerText(client, data.answer);
   }
 
-  @UseGuards(JwtWsGuard)
-  @SubscribeMessage(CLIENT_EVENTS.GAME_PLAY_STRATEGIST)
-  onPlayStrategist(@ConnectedSocket() client: AuthenticatedSocket) {
-    const lobby = client.lobby;
-
-    if (!lobby) throw new WsException('Lobby introuvable');
-
-    lobby.instance.playCard(client, NAME_CARD.STRATEGIST, undefined);
-  }
-
-  @UseGuards(JwtWsGuard)
-  @SubscribeMessage(CLIENT_EVENTS.GAME_PLAY_STRATEGIST_PART_TWO)
-  onPlayStrategistPartTwo(
+  @SubscribeMessage(CLIENT_EVENTS.PLAYER_SUBMIT_CLOSE_NUMBER_ANSWER)
+  onSubmitAnswerCloseNumber(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: PlayStrategistPartTwoDto,
+    @MessageBody() data: PlayerSubmitCloseNumberAnswerDto,
   ) {
     const lobby = client.lobby;
 
     if (!lobby) throw new WsException('Lobby introuvable');
 
-    lobby.instance.playChancellorPartTwo(client, data);
-  }
-
-  @UseGuards(JwtWsGuard)
-  @SubscribeMessage(CLIENT_EVENTS.GAME_PLAY_DIRECTOR_OF_OPERATIONS)
-  onPlayDirectorOfOperations(
-    @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() data: PlayDirectorOfOperationsDto,
-  ) {
-    const lobby = client.lobby;
-
-    if (!lobby) throw new WsException('Lobby introuvable');
-
-    lobby.instance.playCard(client, NAME_CARD.DIRECTOR_OF_OPERATIONS, data);
-  }
-
-  @UseGuards(JwtWsGuard)
-  @SubscribeMessage(CLIENT_EVENTS.GAME_PLAY_DIPLOMAT)
-  onPlayDiplomat(@ConnectedSocket() client: AuthenticatedSocket) {
-    const lobby = client.lobby;
-
-    if (!lobby) throw new WsException('Lobby introuvable');
-
-    lobby.instance.playCard(client, NAME_CARD.DIPLOMAT, undefined);
-  }
-
-  @UseGuards(JwtWsGuard)
-  @SubscribeMessage(CLIENT_EVENTS.GAME_PLAY_DOUBLE_AGENT)
-  onPlayDoubleAgent(@ConnectedSocket() client: AuthenticatedSocket) {
-    const lobby = client.lobby;
-
-    if (!lobby) throw new WsException('Lobby introuvable');
-
-    lobby.instance.playCard(client, NAME_CARD.DOUBLE_AGENT, undefined);
+    lobby.instance.answerCloseNumber(client, data.answer);
   }
 }

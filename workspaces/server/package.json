@@ -1,5 +1,5 @@
 {
-  "name": "@shadow-network/server",
+  "name": "@party-quiz/server",
   "version": "1.0.0",
   "author": "Simon Chevalier",
   "license": "MIT",
@@ -11,7 +11,7 @@
     "start:prod": "rimraf dist && nest build && node dist/server/src/main"
   },
   "dependencies": {
-    "@shadow-network/shared": "*",
+    "@party-quiz/shared": "*",
     "@nestjs/axios": "^4.0.0",
     "@nestjs/cli": "^11.0.6",
     "@nestjs/common": "^11.0.14",

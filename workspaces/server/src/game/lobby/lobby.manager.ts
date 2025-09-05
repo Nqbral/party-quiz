@@ -1,6 +1,5 @@
 import { Lobby } from '@app/game/lobby/lobby';
 import { AuthenticatedSocket } from '@app/types/AuthenticatedSocket';
-import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { WsException } from '@nestjs/websockets';
@@ -21,16 +20,33 @@ export class LobbyManager {
 
   private gameGateway: GameGateway;
 
-  private readonly lastKnownLobbyPerUser: Map<string, string> = new Map();
+  private lastKnownLobbyPerUser: Map<string, string> = new Map();
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor() {}
 
   setGameGateway(gateway: GameGateway) {
     this.gameGateway = gateway;
   }
 
-  public createLobby(owner: AuthenticatedSocket, user: any): Lobby {
-    const currentLobby = this.getLastLobbyForUser(owner.userId);
+  public initializeSocket(client: AuthenticatedSocket): void {
+    client.lobby = null;
+  }
+
+  public terminateSocket(client: AuthenticatedSocket): void {
+    this.lastKnownLobbyPerUser.delete(client.id);
+
+    if (client.lobby?.owner.id == client.id) {
+      this.deleteLobby(client, client.lobby.id);
+      return;
+    }
+
+    client.lobby?.removeClient(client);
+
+    client.lobby = null;
+  }
+
+  public createLobby(owner: AuthenticatedSocket): Lobby {
+    const currentLobby = this.getLastLobbyForUser(owner.id);
 
     if (currentLobby) {
       this.server.to(owner.id).emit(ServerEvents.LobbyError, {
@@ -38,10 +54,12 @@ export class LobbyManager {
         message: 'Vous êtes déjà dans une autre partie.',
       });
 
+      console.log("Already in a lobby, can't create another one");
+
       throw new WsException('Already in a lobby');
     }
 
-    const lobby = new Lobby(this.server, owner, this.httpService);
+    const lobby = new Lobby(this.server, owner);
 
     this.server
       .to(owner.id)
@@ -49,13 +67,13 @@ export class LobbyManager {
 
     this.lobbies.set(lobby.id, lobby);
 
-    lobby.addClient(owner);
+    lobby.addOwner(owner);
     this.addLobby(owner, lobby);
     this.emitEventForAllConnexionsClient(owner, ServerEvents.LobbyJoin, {
       lobbyId: lobby.id,
     });
 
-    this.lastKnownLobbyPerUser.set(owner.userId, lobby.id);
+    this.lastKnownLobbyPerUser.set(owner.id, lobby.id);
 
     return lobby;
   }
@@ -82,12 +100,8 @@ export class LobbyManager {
     this.lastKnownLobbyPerUser.delete(userId);
   }
 
-  public joinLobby(
-    lobbyId: string,
-    client: AuthenticatedSocket,
-    user: any,
-  ): void {
-    const currentLobby = this.getLastLobbyForUser(client.userId);
+  public joinLobby(lobbyId: string, client: AuthenticatedSocket): void {
+    const currentLobby = this.getLastLobbyForUser(client.id);
 
     if (currentLobby && currentLobby !== lobbyId) {
       this.server.to(client.id).emit(ServerEvents.LobbyError, {
@@ -100,12 +114,17 @@ export class LobbyManager {
 
     const lobby = this.getLobby(client, lobbyId);
 
+    if (client.id === lobby.owner.id) {
+      lobby.dispatchLobbyState();
+      return;
+    }
+
     lobby.addClient(client);
     this.addLobby(client, lobby);
     this.emitEventForAllConnexionsClient(client, ServerEvents.LobbyJoin, {
       lobbyId: lobby.id,
     });
-    this.lastKnownLobbyPerUser.set(client.userId, lobby.id);
+    this.lastKnownLobbyPerUser.set(client.id, lobby.id);
 
     lobby.instance.dispatchGameState();
   }
@@ -118,20 +137,22 @@ export class LobbyManager {
 
     lobby.clients.forEach((client) => {
       const connections =
-        this.gameGateway.playerConnections.get(client.userId) || [];
+        this.gameGateway.playerConnections.get(client.id) || [];
 
       connections.forEach((socket) => {
         socket.leave(lobbyId);
         socket.lobby = null;
         socket.emit(ServerEvents.LobbyLeave, { message: 'Lobby supprimé.' });
+        this.clearLastLobbyForUser(socket.id);
       });
-      this.clearLastLobbyForUser(client.userId);
+      this.clearLastLobbyForUser(client.id);
     });
+
+    this.lobbies.delete(lobbyId);
   }
 
   private addLobby(client: AuthenticatedSocket, lobby: Lobby): void {
-    const connections =
-      this.gameGateway.playerConnections.get(client.userId) || [];
+    const connections = this.gameGateway.playerConnections.get(client.id) || [];
 
     connections.forEach((socket) => {
       socket.lobby = lobby;
@@ -143,8 +164,7 @@ export class LobbyManager {
     event: ServerEvents,
     data: any,
   ): void {
-    const connections =
-      this.gameGateway.playerConnections.get(client.userId) || [];
+    const connections = this.gameGateway.playerConnections.get(client.id) || [];
 
     connections.forEach((socket) => {
       socket.emit(event, data);
@@ -169,7 +189,7 @@ export class LobbyManager {
 
         lobby.clients.forEach((client) => {
           const connections =
-            this.gameGateway.playerConnections.get(client.userId) || [];
+            this.gameGateway.playerConnections.get(client.id) || [];
 
           connections.forEach((socket) => {
             socket.leave(lobbyId);
@@ -178,7 +198,7 @@ export class LobbyManager {
               message: 'Lobby supprimé.',
             });
           });
-          this.clearLastLobbyForUser(client.userId);
+          this.clearLastLobbyForUser(client.id);
         });
       }
     }

@@ -1,7 +1,7 @@
 {
-  "name": "shadow-network",
+  "name": "party-quiz",
   "version": "1.0.0",
-  "repository": "https://github.com/Nqbral/shadow-network.git",
+  "repository": "https://github.com/Nqbral/party-quiz.git",
   "author": "Simon Chevalier",
   "license": "MIT",
   "private": true,
@@ -11,9 +11,9 @@
     ]
   },
   "scripts": {
-    "start:dev:client": "yarn workspace @shadow-network/client start:dev",
-    "start:prod:client": "yarn workspace @shadow-network/client start:prod",
-    "start:dev:server": "yarn workspace @shadow-network/server start:dev",
-    "start:prod:server": "yarn workspace @shadow-network/server start:prod"
+    "start:dev:client": "yarn workspace @party-quiz/client start:dev",
+    "start:prod:client": "yarn workspace @party-quiz/client start:prod",
+    "start:dev:server": "yarn workspace @party-quiz/server start:dev",
+    "start:prod:server": "yarn workspace @party-quiz/server start:prod"
   }
 }

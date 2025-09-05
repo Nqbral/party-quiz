@@ -3,11 +3,10 @@
 import Navbar from '@components/navbar/Navbar';
 import { useSocket } from '@contexts/SocketContext';
 import { Listener } from '@lib/SocketManager';
-import { CLIENT_EVENTS } from '@shadow-network/shared/consts/ClientEvents';
-import { LOBBY_STATES } from '@shadow-network/shared/consts/LobbyStates';
-import { EventDescriptonNames } from '@shadow-network/shared/enums/EventDescriptionNames';
-import { ServerEvents } from '@shadow-network/shared/enums/ServerEvents';
-import { ServerPayloads } from '@shadow-network/shared/types/ServerPayloads';
+import { CLIENT_EVENTS } from '@party-quiz/shared/consts/ClientEvents';
+import { LOBBY_STATES } from '@party-quiz/shared/consts/LobbyStates';
+import { ServerEvents } from '@party-quiz/shared/enums/ServerEvents';
+import { ServerPayloads } from '@party-quiz/shared/types/ServerPayloads';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { MagnifyingGlass } from 'react-loader-spinner';
@@ -16,8 +15,10 @@ import Game from './Game';
 import GameLobby from './GameLobby';
 import GameLobbyDeleted from './GameLobbyDeleted';
 import GameLobbyError from './GameLobbyError';
+import GameOwner from './GameOwner';
 
 export default function GameManager() {
+  const { clientId } = useSocket();
   const searchParams = useSearchParams();
   const { isConnectedSocket, addListener, removeListener, emitEvent } =
     useSocket();
@@ -41,16 +42,8 @@ export default function GameManager() {
     stateGame: '',
     roundNumber: 0,
     players: [],
-    playerTurn: null,
-    playersTurnOrder: [],
-    deck: [],
-    lastPlayedCard: '',
-    secondPlayedCard: '',
-    scoreToReach: 0,
-    historyEvents: [],
-    eventDescription: undefined,
-    eventDescriptionKey: EventDescriptonNames.None,
-    roundRecap: null,
+    indexQuestion: 0,
+    question: null,
   });
 
   useEffect(() => {
@@ -88,7 +81,13 @@ export default function GameManager() {
       removeListener(ServerEvents.GameState, onGameState);
       removeListener(ServerEvents.LobbyError, onLobbyError);
     };
-  }, [isConnectedSocket, addListener, removeListener]);
+  }, [
+    isConnectedSocket,
+    addListener,
+    removeListener,
+    gameState.players,
+    clientId,
+  ]);
 
   useEffect(() => {
     setLobbyError({ error: '', message: '' });
@@ -142,10 +141,15 @@ export default function GameManager() {
     switch (lobbyState.stateLobby) {
       case LOBBY_STATES.IN_LOBBY:
         return <GameLobby lobbyState={lobbyState} />;
+
       case LOBBY_STATES.GAME_DELETED:
         return <GameLobbyDeleted />;
     }
   }
 
-  return <Game lobbyState={lobbyState} gameState={gameState} />;
+  if (clientId != lobbyState.ownerId) {
+    return <Game gameState={gameState} />;
+  }
+
+  return <GameOwner gameState={gameState} />;
 }
