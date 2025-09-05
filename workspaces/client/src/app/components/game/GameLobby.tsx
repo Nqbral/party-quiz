@@ -28,9 +28,9 @@ export default function GameLobby({ lobbyState }: Props) {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center gap-6 text-sm sm:text-base">
+    <div className="flex flex-col items-center justify-center gap-6 text-sm sm:text-base">
       {isOwner ? (
-        <div className="flex flex-row items-center gap-16">
+        <div className="flex min-h-screen flex-row items-center gap-16">
           <div className="flex flex-col items-center gap-4">
             <div className="flex w-80 flex-col items-center justify-center gap-2 border-1 border-slate-700 py-4 sm:w-100">
               <h2 className="mb-2 text-base sm:text-lg">Liste des joueurs</h2>
@@ -67,7 +67,7 @@ export default function GameLobby({ lobbyState }: Props) {
         </div>
       ) : (
         <>
-          <div className="flex w-80 flex-col items-center justify-center gap-2 border-1 border-slate-700 py-4 sm:w-100">
+          <div className="mt-20 flex w-80 flex-col items-center justify-center gap-2 border-1 border-slate-700 py-4 sm:w-100">
             <h2 className="mb-2 text-base sm:text-lg">Liste des joueurs</h2>
             {lobbyState?.players.map((player, index) => {
               return (
